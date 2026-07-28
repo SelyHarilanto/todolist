@@ -25,19 +25,27 @@ function App() {
   // Ajouter une tâche
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!description.trim()) return;
+    const trimmedDescription = description.trim();
+    if (!trimmedDescription) return;
 
     try {
       const response = await fetch('http://localhost:3000/api/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
+        body: JSON.stringify({ description: trimmedDescription }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Impossible d’ajouter la tâche');
+      }
+
       const newTodo = await response.json();
-      setTodos([...todos, newTodo]);
+      setTodos((currentTodos) => [...currentTodos, newTodo]);
       setDescription('');
     } catch (err) {
       console.error(err);
+      alert(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -92,7 +100,7 @@ function App() {
             type="submit"
             className="rounded-lg bg-violet-600 px-4 py-3 font-medium text-white transition hover:bg-violet-700"
           >
-            Ajouter une tâche
+            Ajouter
           </button>
         </form>
 
