@@ -41,14 +41,17 @@ app.post('/api/todos', async (req, res) => {
     const description = typeof req.body?.description === 'string'
       ? req.body.description.trim()
       : '';
+    const priority = typeof req.body?.priority === 'string' && ['faible', 'moyenne', 'élevée'].includes(req.body.priority)
+      ? req.body.priority
+      : 'moyenne';
 
     if (!description) {
       return res.status(400).json({ error: 'La description est requise.' });
     }
 
     const newTodo = await pool.query(
-      'INSERT INTO todos (description, completed) VALUES ($1, false) RETURNING *',
-      [description]
+      'INSERT INTO todos (description, completed, priority) VALUES ($1, false, $2) RETURNING *',
+      [description, priority]
     );
 
     return res.status(201).json(newTodo.rows[0]);
